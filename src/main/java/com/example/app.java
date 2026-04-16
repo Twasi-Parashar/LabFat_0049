@@ -1,84 +1,73 @@
-package com.example;
-
-import java.time.LocalDate;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 class Book {
-    private String id;
     private String title;
     private String author;
-    private boolean available;
-
-    public Book(String id, String title, String author) {
-        this.id = id;
+    
+    public Book(String title, String author) {
         this.title = title;
         this.author = author;
-        this.available = true;
     }
-
-    public String getId() { return id; }
-    public String getTitle() { return title; }
-    public String getAuthor() { return author; }
-    public boolean isAvailable() { return available; }
-    public void setAvailable(boolean available) { this.available = available; }
+    
+    public String getTitle() {
+        return title;
+    }
+    
+    public String getAuthor() {
+        return author;
+    }
 }
 
-
-class BorrowRecord {
-    private String bookId;
-    private String memberId;
-    private LocalDate borrowDate;
-    private LocalDate returnDate;
-    private static final int BORROW_DAYS = 14;
-
-    public BorrowRecord(String bookId, String memberId) {
-        this.bookId = bookId;
-        this.memberId = memberId;
-        this.borrowDate = LocalDate.now();
-        this.returnDate = borrowDate.plusDays(BORROW_DAYS);
+class Library {
+    private List<Book> books;
+    
+    public Library() {
+        books = new ArrayList<>();
     }
-
-    public String getBookId() { return bookId; }
-    public String getMemberId() { return memberId; }
-    public LocalDate getBorrowDate() { return borrowDate; }
-    public LocalDate getReturnDate() { return returnDate; }
-
-    public String getBorrowingStatus() {
-        LocalDate today = LocalDate.now();
-        if (today.isAfter(returnDate)) {
-            long daysOverdue = java.time.temporal.ChronoUnit.DAYS.between(returnDate, today);
-            return "OVERDUE by " + daysOverdue + " days";
+    
+    public void addBook(Book book) {
+        books.add(book);
+    }
+    
+    public void removeBook(String title) {
+        books.removeIf(book -> book.getTitle().equalsIgnoreCase(title));
+    }
+    
+    public Optional<Book> searchBook(String title) {
+        return books.stream().filter(book -> book.getTitle().equalsIgnoreCase(title)).findFirst();
+    }
+    
+    public int getBookCount() {
+        return books.size();
+    }
+    
+    public List<Book> getAllBooks() {
+        return new ArrayList<>(books);
+    }
+    
+    public void displayBooks() {
+        if (books.isEmpty()) {
+            System.out.println("No books available in the library.");
         } else {
-            long daysRemaining = java.time.temporal.ChronoUnit.DAYS.between(today, returnDate);
-            return "ACTIVE - " + daysRemaining + " days remaining";
+            System.out.println("Books in the Library:");
+            for (Book book : books) {
+                System.out.println("Title: " + book.getTitle() + ", Author: " + book.getAuthor());
+            }
         }
     }
 }
 
+public class App {
+    public static void main(String[] args) {
+        Library library = new Library();
+        library.addBook(new Book("The Great Gatsby", "F. Scott Fitzgerald"));
+        library.addBook(new Book("1984", "George Orwell"));
+        
+        library.displayBooks();
 
-class Member {
-    private String memberId;
-    private String name;
-    private List<BorrowRecord> borrowHistory;
-
-    public Member(String memberId, String name) {
-        this.memberId = memberId;
-        this.name = name;
-        this.borrowHistory = new ArrayList<>();
+        library.removeBook("1984");
+        library.displayBooks();
     }
-
-    public String getMemberId() { return memberId; }
-    public String getName() { return name; }
-    public List<BorrowRecord> getBorrowHistory() { return borrowHistory; }
-
-    public void addBorrowRecord(BorrowRecord record) {
-        borrowHistory.add(record);
-    }
-}
-
-
-public class LibraryManagementSystem {
-    private Map<String, Book> books;
-    private Map<String, Member> members;
 }
